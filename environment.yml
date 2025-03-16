@@ -1,0 +1,29 @@
+name: ExpressGen_env  # Conda environment name
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - jupyterlab
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - seaborn
+  - pytorch
+  - torchvision
+  - torchaudio
+  - lpips
+  - opencv
+  - pip
+
+  # Install additional pip packages
+  - pip:
+      - opencv-python
+      - scikit-learn
+      - tqdm
+      - datasets
+      - torchinfo
+      - pillow
+      - imageio
+      - wandb
