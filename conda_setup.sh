@@ -7,22 +7,22 @@ module load anaconda3/2023.03/default
 
 echo "Setting some initial vairables..."
 set ENV_NAME = ExpressGen_env
-set ENV_DIR = /speed-scratch/$USER/envs
+set ENV_DIR = /speed-scratch/$USER/comp6841/envs
 set ENV_PATH = $ENV_DIR/$ENV_NAME
 
 set TMP_DIR = $ENV_DIR/tmp
 set PKGS_DIR = $ENV_DIR/pkgs
-set PIP_DIR = $ENV_DIR/cache
+set CACHE_DIR = $ENV_DIR/cache
 set HF_DIR = $ENV_DIR/huggingface
 
-mkdir -p $ENV_DIR $TMP_DIR $PKGS_DIR $CACHE_DIR
+mkdir -p $ENV_DIR $TMP_DIR $PKGS_DIR $CACHE_DIR $HF_DIR
 
 setenv TMP $TMP_DIR
 setenv TMPDIR $TMP_DIR
 setenv CONDA_PKGS_DIRS $PKGS_DIR
-setenv PIP_CACHE_DIR $PIP_DIR
+setenv PIP_CACHE_DIR $CACHE_DIR
 setenv HF_HOME $HF_DIR
-setenv HF_HUB_CACHE $HF_DIR
+setenv HF_HUB_CACHE $CACHE_DIR
 
 # Check if the environment already exists
 if ( -d "$ENV_PATH" ) then

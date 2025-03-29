@@ -2,16 +2,20 @@
 
 # Set environment variables
 set ENV_NAME = ExpressGen_env
-set ENV_DIR = /speed-scratch/$USER/envs
+set ENV_DIR = /speed-scratch/$USER/comp6841/envs
 set ENV_PATH = $ENV_DIR/$ENV_NAME
+
 set TMP_DIR = $ENV_DIR/tmp
 set PKGS_DIR = $ENV_DIR/pkgs
-set PIP_DIR = $ENV_DIR/cache
+set CACHE_DIR = $ENV_DIR/cache
+set HF_DIR = $ENV_DIR/huggingface
 
 setenv TMP $TMP_DIR
 setenv TMPDIR $TMP_DIR
 setenv CONDA_PKGS_DIRS $PKGS_DIR
-setenv PIP_CACHE_DIR $PIP_DIR
+setenv PIP_CACHE_DIR $CACHE_DIR
+setenv HF_HOME $HF_DIR
+setenv HF_HUB_CACHE $CACHE_DIR
 
 # Navigate to the Jupyter directory
 cd .. || exit
