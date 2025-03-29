@@ -25,7 +25,7 @@ echo "Activating Conda environment $ENV_NAME..."
 echo "======================================================================"
 conda activate "$ENV_PATH"
 if ($status != 0) then
-    "Error: Failed to activate the Conda environment $ENV_NAME."
+    echo "Error: Failed to activate the Conda environment $ENV_NAME."
     exit 1
 endif
 
