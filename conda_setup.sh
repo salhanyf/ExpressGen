@@ -13,6 +13,7 @@ set ENV_PATH = $ENV_DIR/$ENV_NAME
 set TMP_DIR = $ENV_DIR/tmp
 set PKGS_DIR = $ENV_DIR/pkgs
 set PIP_DIR = $ENV_DIR/cache
+set HF_DIR = $ENV_DIR/huggingface
 
 mkdir -p $ENV_DIR $TMP_DIR $PKGS_DIR $CACHE_DIR
 
@@ -20,6 +21,8 @@ setenv TMP $TMP_DIR
 setenv TMPDIR $TMP_DIR
 setenv CONDA_PKGS_DIRS $PKGS_DIR
 setenv PIP_CACHE_DIR $PIP_DIR
+setenv HF_HOME $HF_DIR
+setenv HF_HUB_CACHE $HF_DIR
 
 # Check if the environment already exists
 if ( -d "$ENV_PATH" ) then
