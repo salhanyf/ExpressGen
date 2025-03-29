@@ -1,0 +1,6 @@
+name: /nfs/speed-scratch/f_salha/comp6841/envs/ExpressGen_env
+channels:
+  - defaults
+dependencies:
+  - jupyterlab
+prefix: /nfs/speed-scratch/f_salha/comp6841/envs/ExpressGen_env
