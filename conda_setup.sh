@@ -36,7 +36,7 @@ if ( -d "$ENV_PATH" ) then
 else
 	echo "Creating Conda environment $ENV_NAME at $ENV_PATH from environment.yml..."
     echo "======================================================================"
-    conda env create -p "$ENV_PATH" -f environment.yml
+    conda create -p "$ENV_PATH" -y
 
 	echo "Activating Conda environment $ENV_NAME..."
 	echo "======================================================================"
