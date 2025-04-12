@@ -2,8 +2,15 @@
 
 date
 echo "======================================================================"
-# Load Anaconda module
+# Load modules
 module load anaconda3/2023.03/default
+module load cuda/11.8/default
+module load python/3.11.6/default
+
+# Set CUDA environment variables
+setenv CUDA_HOME /encs/pkg/cuda-11.8/root
+setenv PATH ${CUDA_HOME}/bin:${PATH}
+setenv LD_LIBRARY_PATH ${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 
 echo "Setting some initial vairables..."
 set ENV_NAME = ExpressGen_env
@@ -36,7 +43,7 @@ if ( -d "$ENV_PATH" ) then
 else
 	echo "Creating Conda environment $ENV_NAME at $ENV_PATH from environment.yml..."
     echo "======================================================================"
-    conda create -p "$ENV_PATH" -y
+    conda create -p "$ENV_PATH" -c conda-forge python=3.11.6 -y
 
 	echo "Activating Conda environment $ENV_NAME..."
 	echo "======================================================================"
@@ -48,9 +55,13 @@ else
 
 	echo "Installing essential packages..."
 	echo "======================================================================"
-    conda install -c conda-forge jupyterlab -y
 	pip install --upgrade pip
     pip install --quiet torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    pip install matplotlib numpy tqdm pandas pillow ipywidgets ipykernel
+    pip install transformers datasets accelerate
+    conda install -c conda-forge jupyterlab -y
+
+    python -m ipykernel install --user --name=ExpressGen_env --display-name "Python (ExpressGen)"
 endif
 
 echo "Conda environemnt summary..."
@@ -58,6 +69,11 @@ echo "======================================================================"
 conda info --envs
 conda list
 pip list
+
+echo "Saving environment to environment.yml..."
+echo "======================================================================"
+conda env export --from-history > environment-clean.yml
+conda env export > environment.yml
 
 # Deactivate Conda env
 echo "Deactivating Conda environment..."

@@ -20,8 +20,15 @@ setenv HF_HUB_CACHE $CACHE_DIR
 # Navigate to the Jupyter directory
 cd .. || exit
 
-# Load Anaconda module if not already loaded
+# Load modules
 module load anaconda3/2023.03/default
+module load cuda/11.8/default
+module load python/3.11.6/default
+
+# Set CUDA environment variables
+setenv CUDA_HOME /encs/pkg/cuda-11.8/root
+setenv PATH ${CUDA_HOME}/bin:${PATH}
+setenv LD_LIBRARY_PATH ${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 
 # Activate the Conda environment
 conda activate "$ENV_PATH"
