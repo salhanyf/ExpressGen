@@ -9,9 +9,8 @@
 #SBATCH -o output-%A.log
 #SBATCH -e error-%A.log
 
-#SBATCH --gpus=1
-#SBATCH --constraint=gpu20 
-#SBATCH --mem=40G
+#SBATCH --gres=gpu:nvidia_a100_7g.80gb:1
+#SBATCH --mem=100G
 
 # Request CPU slots (processes and threads: n * c)
 #SBATCH -n 1
