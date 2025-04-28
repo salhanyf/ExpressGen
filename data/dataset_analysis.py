@@ -14,6 +14,7 @@ def get_dataset_stats(dataset):
     print(f"Number of samples: {len(dataset)}")
     print(f"Number of classes: {len(dataset.classes)}")
     print(f"Classes: {dataset.classes}")
+    print("")
 
 def plot_class_distribution(dataset):
     """
@@ -22,8 +23,9 @@ def plot_class_distribution(dataset):
     Args:
         dataset (Dataset): A dataset object.
     """
-    labels = [label for _, label in dataset]
-    labels = torch.tensor(labels)
+    #labels = [label for _, label in dataset]
+    #labels = torch.tensor(labels)
+    labels = torch.tensor(dataset.targets)
     class_counts = torch.bincount(labels)
     class_names = dataset.classes
 
@@ -56,13 +58,12 @@ def show_samples_per_class(dataset, samples_per_class=4):
     for class_idx, indices in class_to_indices.items():
         for i, idx in enumerate(indices):
             img, label = dataset[idx]
-            img = img.permute(1, 2, 0).numpy()
-            img = (img * 0.5) + 0.5
+            img = img.permute(1, 2, 0).cpu().numpy()
+            img = np.clip(img, 0, 1)
             
             plt_idx = class_idx * samples_per_class + i + 1
             plt.subplot(total_classes, samples_per_class, plt_idx)
-            #plt.imshow(img)
-            plt.imshow(np.clip(img, 0, 1))
+            plt.imshow(img)
             plt.title(dataset.classes[label])
             plt.axis('off')
 

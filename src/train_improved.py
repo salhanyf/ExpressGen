@@ -1,4 +1,4 @@
-# src/train.py
+# src/train_improved.py
 
 import os
 import time
@@ -7,9 +7,11 @@ from collections import Counter
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
+from torchvision.models import vgg19
 
 def compute_class_weights(train_loader: DataLoader, device: torch.device) -> torch.Tensor:
     """
@@ -51,8 +53,8 @@ def evaluate(
 
         # sample random targets ≠ real labels
         rand_labels = torch.randint(0, num_classes, (bsz,), device=device)
-        same = rand_labels == real_labels
-        rand_labels[same] = (rand_labels[same] + 1) % num_classes
+        mask = rand_labels == real_labels
+        rand_labels[mask] = (rand_labels[mask] + 1) % num_classes
 
         # Discriminator forward
         out_adv_real, out_cls_real = D(real_images)
@@ -84,17 +86,25 @@ def train(
     save_dir: str = "../results"
 ) -> None:
     """
-    Train Generator and Discriminator models.
+    Train Generator and Discriminator with reconstruction and perceptual losses.
     """
+    # set up perceptual feature extractor (VGG19)
+    perc_model = vgg19(pretrained=True).features[:16].eval().to(device)
+    for p in perc_model.parameters():
+        p.requires_grad = False
+
     os.makedirs(save_dir, exist_ok=True)
     start_time = time.time()
 
-    # prepare losses and optimizer
+    # losses and weights
     class_weights = compute_class_weights(train_loader, device)
-    adv_loss_fn = nn.BCEWithLogitsLoss()
-    cls_loss_fn = nn.CrossEntropyLoss(weight=class_weights)
-    num_classes = class_weights.size(0)
+    adv_loss_fn   = nn.BCEWithLogitsLoss()
+    cls_loss_fn   = nn.CrossEntropyLoss(weight=class_weights)
+    num_classes   = class_weights.size(0)
+    lambda_rec    = 10.0
+    lambda_perc   =  5.0
 
+    # optimizers
     opt_G = torch.optim.Adam(G.parameters(), lr=2e-4, betas=(0.5, 0.999))
     opt_D = torch.optim.Adam(D.parameters(), lr=2e-4, betas=(0.5, 0.999))
 
@@ -127,9 +137,13 @@ def train(
             # Generator update
             fake_images = G(real_images, rand_labels)
             out_adv_fake, out_cls_fake = D(fake_images)
-            g_adv = adv_loss_fn(out_adv_fake, torch.ones_like(out_adv_fake))
-            g_cls = cls_loss_fn(out_cls_fake, rand_labels)
-            g_loss = g_adv + g_cls
+            g_adv       = adv_loss_fn(out_adv_fake, torch.ones_like(out_adv_fake))
+            g_cls       = cls_loss_fn(out_cls_fake, rand_labels)
+            recon_loss  = F.l1_loss(fake_images, real_images)
+            feat_real   = perc_model(real_images)
+            feat_fake   = perc_model(fake_images)
+            perc_loss   = F.l1_loss(feat_fake, feat_real)
+            g_loss      = g_adv + g_cls + lambda_rec * recon_loss + lambda_perc * perc_loss
             opt_G.zero_grad(); g_loss.backward(); opt_G.step()
 
             running_d += d_loss.item()
@@ -138,7 +152,7 @@ def train(
                 pct = i / total_batches * 100
                 print(f"\rEpoch {epoch}/{num_epochs} [{pct:.1f}%]", end="")
 
-        # end epoch: compute averages
+        # end epoch metrics
         avg_d = running_d / total_batches
         avg_g = running_g / total_batches
         val_d, val_g = evaluate(G, D, val_loader, device, class_weights)
@@ -153,22 +167,22 @@ def train(
         if epoch % 5 == 0:
             G.eval()
             imgs, lbls = next(iter(val_loader))
-            inp  = imgs[0].unsqueeze(0).to(device)       # [1,3,H,W]
-            orig = lbls[0].to(device)
-            tgt = torch.randint(0, num_classes, (1,), device=device)
+            inp    = imgs[0].unsqueeze(0).to(device)
+            orig   = lbls[0].to(device)
+            tgt    = torch.randint(0, num_classes, (1,), device=device)
             if tgt == orig:
                 tgt = (tgt + 1) % num_classes
-
-            with torch.no_grad():
-                gen = G(inp, tgt)                       # [1,3,H,W]
+                
+            with torch.no_grad(): 
+                gen = G(inp, tgt)
 
             # drop batch dimension for make_grid
             real_img = (inp[0] + 1) / 2               # [3,H,W]
             gen_img  = (gen[0] + 1) / 2               # [3,H,W]
             comp     = make_grid([real_img, gen_img], nrow=2)
-
-            plt.figure(figsize=(4, 2))
-            plt.imshow(comp.permute(1, 2, 0).cpu().numpy())
-            plt.axis('off')
+            
+            plt.figure(figsize=(4,2)); 
+            plt.imshow(comp.permute(1,2,0).cpu().numpy()); 
+            plt.axis('off'); 
             plt.show()
             G.train()
